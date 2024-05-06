@@ -17,6 +17,6 @@ export default function TextEditor() {
   },[])
   
   return (
-    <div id='container' ref={wrapper}></div>
+    <div id='container' ref={wrapper} ></div>
   )
 }
