@@ -1,4 +1,4 @@
-import {useCallback, useEffect,useRef} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import Quill from "quill"
 import "quill/dist/quill.snow.css"
 import {io} from 'socket.io-client'
@@ -18,13 +18,31 @@ const Tool_Bar_Options=[
 
 export default function TextEditor() {
 
+  const [socket,setSocket]=useState()
+  const [quill,setQuill]=useState()
+
   useEffect(()=>{
-    const socket=io("http://localhost:3001")
+    const s=io("http://localhost:3001")
+    setSocket(s)
 
     return ()=>{
-      socket.disconnect()
+      s.disconnect()
     }
   },[])
+
+  useEffect(()=>{
+    if(socket == null || quill==null) return
+
+    const handler = (delta,oldDelta,source)=>{
+      if(source !== 'user') return
+      socket.emit("send-changes",delta)
+    }
+    quill.on('text-change',handler)
+
+    return()=>{
+      quill.off('text-change',handler)
+    }
+  },[socket,quill])
   
   const wrapperref=useCallback((wrapper)=>{
     if(wrapper == null) return
@@ -32,7 +50,8 @@ export default function TextEditor() {
     wrapper.innerHTML = ""
     const editor=document.createElement("div")
     wrapper.append(editor)
-    new Quill(editor,{theme:"snow",modules:{toolbar:Tool_Bar_Options}})
+    const q= new Quill(editor,{theme:"snow",modules:{toolbar:Tool_Bar_Options},})
+    setQuill(q)
   },[])
   
   return (
