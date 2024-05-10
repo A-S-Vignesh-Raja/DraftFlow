@@ -56,6 +56,7 @@ export default function TextEditor() {
     }
   },[socket,quill])
 
+  
   useEffect(()=>{
     if(socket == null || quill==null) return
 
