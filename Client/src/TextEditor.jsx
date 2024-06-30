@@ -703,6 +703,7 @@ export default function TextEditor() {
   );
 }
 */
+
 import { useCallback, useEffect, useState, useRef } from 'react';
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
@@ -731,8 +732,16 @@ export default function TextEditor() {
   const [isRecording, setIsRecording] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const localStreamRef = useRef();
-  const audioRefs = useRef({});
+  const remoteStreamRef = useRef();
+  const peerConnectionRef = useRef();
   const recognitionRef = useRef();
+  const servers = {
+    iceServers: [
+      {
+        urls: 'stun:stun1.l.google.com:19302'
+      }
+    ]
+  };
 
   useEffect(() => {
     const s = io("http://localhost:3001");
@@ -752,6 +761,7 @@ export default function TextEditor() {
     });
 
     socket.emit('get-document', documentId);
+
   }, [socket, quill, documentId]);
 
   useEffect(() => {
@@ -797,12 +807,10 @@ export default function TextEditor() {
     setIsRecording(true);
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     localStreamRef.current = stream;
-    socket.emit('start-call', { documentId });
-
-    // Broadcast the audio stream to other users
-    stream.getTracks().forEach(track => {
-      socket.emit('broadcast-track', { documentId, track: track });
-    });
+    if (peerConnectionRef.current) {
+      stream.getTracks().forEach(track => peerConnectionRef.current.addTrack(track, stream));
+    }
+    socket.emit('start-call', documentId);
   };
 
   const handleStopRecording = () => {
@@ -810,31 +818,87 @@ export default function TextEditor() {
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
     }
-    socket.emit('end-call', { documentId });
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    socket.emit('end-call', documentId);
   };
 
   useEffect(() => {
     if (socket == null) return;
 
-    socket.on('broadcast-track', ({ documentId, track }) => {
-      if (!audioRefs.current[documentId]) {
-        audioRefs.current[documentId] = new Audio();
-        audioRefs.current[documentId].autoplay = true;
-      }
-      audioRefs.current[documentId].srcObject = new MediaStream([track]);
-    });
+    const handleCall = async () => {
+      peerConnectionRef.current = new RTCPeerConnection(servers);
+      remoteStreamRef.current.srcObject = new MediaStream();
+      
+      peerConnectionRef.current.ontrack = event => {
+        event.streams[0].getTracks().forEach(track => {
+          remoteStreamRef.current.srcObject.addTrack(track);
+        });
+      };
 
-    socket.on('end-call', ({ documentId }) => {
-      if (audioRefs.current[documentId]) {
-        audioRefs.current[documentId].srcObject = null;
+      peerConnectionRef.current.onicecandidate = event => {
+        if (event.candidate) {
+          socket.emit('ice-candidate', { candidate: event.candidate, documentId });
+        }
+      };
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => {
+          peerConnectionRef.current.addTrack(track, localStreamRef.current);
+        });
       }
-    });
+
+      const offer = await peerConnectionRef.current.createOffer();
+      await peerConnectionRef.current.setLocalDescription(offer);
+      socket.emit('offer', { offer, documentId });
+    };
+
+    const handleOffer = async ({ offer }) => {
+      peerConnectionRef.current = new RTCPeerConnection(servers);
+      remoteStreamRef.current.srcObject = new MediaStream();
+      
+      peerConnectionRef.current.ontrack = event => {
+        event.streams[0].getTracks().forEach(track => {
+          remoteStreamRef.current.srcObject.addTrack(track);
+        });
+      };
+
+      peerConnectionRef.current.onicecandidate = event => {
+        if (event.candidate) {
+          socket.emit('ice-candidate', { candidate: event.candidate, documentId });
+        }
+      };
+
+      await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await peerConnectionRef.current.createAnswer();
+      await peerConnectionRef.current.setLocalDescription(answer);
+      socket.emit('answer', { answer, documentId });
+    };
+
+    const handleAnswer = async ({ answer }) => {
+      await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+    };
+
+    const handleIceCandidate = ({ candidate }) => {
+      if (candidate && peerConnectionRef.current) {
+        peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+    };
+
+    socket.on('start-call', handleCall);
+    socket.on('offer', handleOffer);
+    socket.on('answer', handleAnswer);
+    socket.on('ice-candidate', handleIceCandidate);
 
     return () => {
-      socket.off('broadcast-track');
-      socket.off('end-call');
+      socket.off('start-call', handleCall);
+      socket.off('offer', handleOffer);
+      socket.off('answer', handleAnswer);
+      socket.off('ice-candidate', handleIceCandidate);
     };
-  }, [socket]);
+  }, [socket, documentId]);
 
   const handleStartListening = () => {
     if (!('webkitSpeechRecognition' in window)) {
@@ -855,10 +919,8 @@ export default function TextEditor() {
         }
       }
       if (finalText) {
-        const range = quill.getSelection(true);
-        quill.insertText(range.index, finalText);
-        quill.setSelection(range.index + finalText.length, 0); // Move cursor to end of inserted text
         const delta = { ops: [{ insert: finalText }] };
+        quill.updateContents(delta);
         socket.emit('send-changes', delta);
       }
     };
@@ -900,11 +962,7 @@ export default function TextEditor() {
           <FontAwesomeIcon icon={faStop} /> Stop Speech Recognition
         </button>
       </div>
-      <div>
-        {Object.keys(audioRefs.current).map(documentId => (
-          <audio key={documentId} ref={audio => audioRefs.current[documentId] = audio} autoPlay />
-        ))}
-      </div>
+      <audio ref={remoteStreamRef} autoPlay />
     </div>
   );
 }
