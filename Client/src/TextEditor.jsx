@@ -703,7 +703,6 @@ export default function TextEditor() {
   );
 }
 */
-
 import { useCallback, useEffect, useState, useRef } from 'react';
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
@@ -735,6 +734,7 @@ export default function TextEditor() {
   const remoteStreamRef = useRef();
   const peerConnectionRef = useRef();
   const recognitionRef = useRef();
+  const isProcessingSpeechRef = useRef(false);  // To prevent duplicate speech handling
   const servers = {
     iceServers: [
       {
@@ -768,7 +768,10 @@ export default function TextEditor() {
     if (socket == null || quill == null) return;
 
     const handler = (delta) => {
+      quill.setSelection(quill.getLength(), 0);
       quill.updateContents(delta);
+      quill.setSelection(quill.getLength(), 0);
+      
     };
     socket.on('receive-changes', handler);
 
@@ -778,7 +781,8 @@ export default function TextEditor() {
   }, [socket, quill]);
 
   useEffect(() => {
-    if (socket == null || quill == null) return;
+    if (socket == null || quill == null || isListening) return;
+
 
     const handler = (delta, oldDelta, source) => {
       if (source !== 'user') return;
@@ -912,6 +916,9 @@ export default function TextEditor() {
     recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
+      if (isProcessingSpeechRef.current) return;
+      isProcessingSpeechRef.current = true;
+
       let finalText = '';
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
@@ -919,10 +926,15 @@ export default function TextEditor() {
         }
       }
       if (finalText) {
-        const delta = { ops: [{ insert: finalText }] };
-        quill.updateContents(delta);
+        const range = quill.getSelection(true);
+        quill.insertText(range.index, finalText);
+        quill.setSelection(range.index + finalText.length);
+        const delta = quill.getContents(range.index);
         socket.emit('send-changes', delta);
+        console.log(delta);
       }
+
+      isProcessingSpeechRef.current = false;
     };
 
     recognition.onerror = (event) => {
@@ -931,6 +943,7 @@ export default function TextEditor() {
 
     recognition.onend = () => {
       setIsListening(false);
+      isProcessingSpeechRef.current = false;
     };
 
     recognition.start();
