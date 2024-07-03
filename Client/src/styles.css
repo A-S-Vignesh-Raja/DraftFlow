@@ -37,10 +37,18 @@ body {
   display: flex;
   justify-content: center;
   margin-top: 1rem;
+  background-color: #f3f3f3;
+  padding: 10px;
+  position: sticky;
+  z-index: 1;
+  bottom: 0;
+  border: none;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
 }
 
-.voice-button {
-  background-color: #4CAF50;
+
+.voice-button-start,.voice-button-speech-on {
+  background-color: #45a049;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -51,21 +59,24 @@ body {
   transition: background-color 0.3s;
 }
 
-.voice-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.voice-button:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.voice-button.stop {
-  background-color: #f44336;
-}
-
-.voice-button.stop:hover:not(:disabled) {
+.voice-button-stop,.voice-button-speech-off {
   background-color: #e41e26;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.voice-button-start:hover,.voice-button-speech-on:hover{
+  background-color: #1f5622;
+}
+
+.voice-button-stop:hover,.voice-button-speech-off:hover{
+  background-color: #921317;
 }
 
 @page {

@@ -230,16 +230,16 @@ export default function TextEditor() {
     <div className='container'>
       <div className='editor' ref={wrapperRef}></div>
       <div className="voice-recorder">
-        <button onClick={handleStartRecording} className="voice-button">
+        <button onClick={handleStartRecording} className="voice-button-start">
           <FontAwesomeIcon icon={faMicrophone} /> Start Voice Chat
         </button>
-        <button onClick={handleStopRecording} className="voice-button">
+        <button onClick={handleStopRecording} className="voice-button-stop">
           <FontAwesomeIcon icon={faStop} /> Stop Voice Chat
         </button>
-        <button onClick={handleStartListening} className="voice-button" disabled={isListening}>
+        <button onClick={handleStartListening} className="voice-button-speech-on" disabled={isListening}>
           <FontAwesomeIcon icon={faMicrophone} /> Start Speech Recognition
         </button>
-        <button onClick={handleStopListening} className="voice-button" disabled={!isListening}>
+        <button onClick={handleStopListening} className="voice-button-speech-off" disabled={!isListening}>
           <FontAwesomeIcon icon={faStop} /> Stop Speech Recognition
         </button>
       </div>
