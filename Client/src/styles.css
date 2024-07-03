@@ -1,130 +1,96 @@
-*,*::after,*::before{
-    box-sizing: border-box;
-}
-/*
-body{
-    background-color: #f3f3f3;
-    margin: 0;
+*, *::after, *::before {
+  box-sizing: border-box;
 }
 
-.container .ql-editor{
-    width: 8.5in;
-    min-height: 11in;
-    padding: 1in;
-    margin: 1rem;
-    box-shadow: 0 0 5px 0 rgba(0,0,0,0.5);
-    background-color: white;
+body {
+  background-color: #f3f3f3;
+  margin: 0;
 }
 
-.container .ql-container.ql-snow{
-    border: none;
-    display: flex;
-    justify-content: center;
+.container .ql-editor {
+  width: 8.5in;
+  min-height: 11in;
+  padding: 1in;
+  margin: 1rem;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+  background-color: white;
 }
 
-.container .ql-toolbar.ql-snow{
-    display: flex;
-    justify-content: center;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: #f3f3f3;
-    border: none;
-    box-shadow: 0 0 5px 0 rgba(0,0,0,0.5);
+.container .ql-container.ql-snow {
+  border: none;
+  display: flex;
+  justify-content: center;
 }
 
-@page{
-    margin: 1in;
+.container .ql-toolbar.ql-snow {
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #f3f3f3;
+  border: none;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
 }
 
-@media print{
-    body{
-        background: none;
-    }
-
-    .container .ql-editor{
-        width: 6.5in;
-        height: 9in;
-        padding: 0;
-        margin: 0;
-        box-shadow: none;
-        align-self: flex-start;
-    }
-
-    .container .ql-toolbar.ql-snow{
-        display: none;
-    }
+.voice-recorder {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
 }
-*/
-/*
-.container {
-    position: relative;
-    width: 100%;
-    height: 100%;
+
+.voice-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.voice-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.voice-button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.voice-button.stop {
+  background-color: #f44336;
+}
+
+.voice-button.stop:hover:not(:disabled) {
+  background-color: #e41e26;
+}
+
+@page {
+  margin: 1in;
+}
+
+@media print {
+  body {
+      background: none;
   }
-  
-  .editor {
-    height: calc(100% - 60px); 
+
+  .container .ql-editor {
+      width: 6.5in;
+      height: 9in;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+      align-self: flex-start;
   }
-  /*
+
+  .container .ql-toolbar.ql-snow {
+      display: none;
+  }
+
   .voice-recorder {
-    position: absolute;
-    bottom: 10px; 
-    right: 10px; 
-    z-index: 10;
+      display: none;
   }
-  
-  .voice-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-  .voice-button:hover {
-    background-color: #45a049;
-  }
-  */
-
-  .container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  
-  .editor {
-    height: calc(100% - 100px); 
-  }
-  
-  .voice-recorder {
-    position: absolute;
-    bottom: 10px; 
-    right: 10px; 
-    z-index: 10;
-  }
-  
-  .voice-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-  .voice-button:hover {
-    background-color: #45a049;
-  }
-  
+}
