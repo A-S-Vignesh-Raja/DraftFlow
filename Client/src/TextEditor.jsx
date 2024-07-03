@@ -904,7 +904,7 @@ export default function TextEditor() {
         const range = quill.getSelection(true);
         quill.insertText(range.index, finalText);
         quill.setSelection(range.index + finalText.length, 0); // Move cursor to end of inserted text
-        const delta = { ops: [{ insert: finalText }] };
+        const delta = { ops: [{ retain: range.index }, { insert: finalText }] };
         socket.emit('send-changes', delta);
       }
     };
