@@ -1,11 +1,11 @@
 
 const io = require("socket.io")(3001, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: "https://draft-flow.vercel.app",
       methods: ["GET", "POST"],
     },
   });
-  
+
   
   io.on("connection", socket => {
   
