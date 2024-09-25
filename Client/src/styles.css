@@ -59,6 +59,18 @@ body {
   transition: background-color 0.3s;
 }
 
+.voice-button-speech-start{
+  background-color: rgb(3, 122, 250);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
 .voice-button-stop,.voice-button-speech-off {
   background-color: #e41e26;
   color: white;

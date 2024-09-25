@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState, useRef } from 'react';
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
@@ -26,6 +25,8 @@ export default function TextEditor() {
   const [quill, setQuill] = useState();
   const [isRecording, setIsRecording] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('en-US'); // Default language
   const localStreamRef = useRef();
   const peerConnectionRef = useRef();
   const recognitionRef = useRef();
@@ -38,6 +39,17 @@ export default function TextEditor() {
       }
     ]
   };
+
+  const languages = [
+    { label: 'English (US)', code: 'en-US' },
+    { label: 'Tamil', code: 'ta-IN' },
+    { label: 'Hindi', code: 'hi-IN' },
+    { label: 'Telugu', code: 'te-IN' },
+    { label: 'Malayalam', code: 'ml-IN' },
+    { label: 'Spanish', code: 'es-ES' },
+    { label: 'French', code: 'fr-FR' },
+    { label: 'Japanese', code: 'ja-JP' }
+  ];
 
   useEffect(() => {
     const s = io("http://localhost:3001");
@@ -179,7 +191,15 @@ export default function TextEditor() {
     };
   }, [socket, documentId]);
 
+  const handleLanguageChange = (e) => {
+    setSelectedLanguage(e.target.value);
+  };
+
   const handleStartListening = () => {
+    setShowLanguageDropdown(true);
+  };
+
+  const startSpeechRecognition = () => {
     if (!('webkitSpeechRecognition' in window)) {
       alert('Speech recognition not supported in this browser.');
       return;
@@ -188,7 +208,7 @@ export default function TextEditor() {
     const recognition = new window.webkitSpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = selectedLanguage; // Use selected language
 
     recognition.onresult = (event) => {
       let finalText = '';
@@ -212,6 +232,7 @@ export default function TextEditor() {
 
     recognition.onend = () => {
       setIsListening(false);
+      setShowLanguageDropdown(false); // Hide dropdown after speech recognition ends
     };
 
     recognition.start();
@@ -224,6 +245,7 @@ export default function TextEditor() {
       recognitionRef.current.stop();
     }
     setIsListening(false);
+    setShowLanguageDropdown(false); // Hide dropdown when stopping listening
   };
 
   return (
@@ -236,14 +258,26 @@ export default function TextEditor() {
         <button onClick={handleStopRecording} className="voice-button-stop">
           <FontAwesomeIcon icon={faStop} /> Stop Voice Chat
         </button>
+
         <button onClick={handleStartListening} className="voice-button-speech-on" disabled={isListening}>
-          <FontAwesomeIcon icon={faMicrophone} /> Start Speech Recognition
+          <FontAwesomeIcon icon={faMicrophone} /> Speech Recognition
         </button>
+        {showLanguageDropdown && (
+          <div className="language-selector">
+            <select value={selectedLanguage} onChange={handleLanguageChange}>
+              {languages.map(lang => (
+                <option key={lang.code} value={lang.code}>{lang.label}</option>
+              ))}
+            </select>
+            <button onClick={startSpeechRecognition} className='voice-button-speech-start'><FontAwesomeIcon icon={faMicrophone} />Start Recognizing</button>
+          </div>
+        )}
         <button onClick={handleStopListening} className="voice-button-speech-off" disabled={!isListening}>
           <FontAwesomeIcon icon={faStop} /> Stop Speech Recognition
         </button>
+
       </div>
-      <audio ref={audioRef} autoPlay />
+      <audio ref={audioRef} autoPlay></audio>
     </div>
   );
 }
