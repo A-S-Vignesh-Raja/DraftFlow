@@ -10,7 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mongoose": "^8.3.4",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.6.3",
     "nodemon": "^3.1.7",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5"

@@ -53,6 +53,7 @@ export default function TextEditor() {
 
   useEffect(() => {
     const s = io("https://draftflow.onrender.com");
+    //const s=io("http://localhost:3001");
     setSocket(s);
 
     return () => {
@@ -70,6 +71,19 @@ export default function TextEditor() {
 
     socket.emit('get-document', documentId);
   }, [socket, quill, documentId]);
+  /*useEffect(() => {
+    if (socket == null || quill == null) return;
+  
+    socket.once("load-document", document => {
+      if (document) {
+        quill.setContents(document); // Load existing document data if any
+      }
+      quill.enable();
+    });
+  
+    socket.emit('get-document', documentId);
+  }, [socket, quill, documentId]);*/
+  
 
   useEffect(() => {
     if (socket == null || quill == null) return;
