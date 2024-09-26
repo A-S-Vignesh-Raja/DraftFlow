@@ -1,0 +1,6 @@
+{
+    "rewrites": [
+      { "source": "/documents/:id", "destination": "/" }
+    ]
+  }
+  
