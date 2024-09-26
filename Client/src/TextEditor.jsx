@@ -27,6 +27,7 @@ export default function TextEditor() {
   const [isListening, setIsListening] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en-US'); // Default language
+  const [isRecognizing, setIsRecognizing] = useState(false); // New state for toggle
   const localStreamRef = useRef();
   const peerConnectionRef = useRef();
   const recognitionRef = useRef();
@@ -52,8 +53,8 @@ export default function TextEditor() {
   ];
 
   useEffect(() => {
-    const s = io("https://draftflow.onrender.com");
-    //const s=io("http://localhost:3001");
+    //const s = io("https://draftflow.onrender.com");
+    const s=io("http://localhost:3001");
     setSocket(s);
 
     return () => {
@@ -71,20 +72,7 @@ export default function TextEditor() {
 
     socket.emit('get-document', documentId);
   }, [socket, quill, documentId]);
-  /*useEffect(() => {
-    if (socket == null || quill == null) return;
   
-    socket.once("load-document", document => {
-      if (document) {
-        quill.setContents(document); // Load existing document data if any
-      }
-      quill.enable();
-    });
-  
-    socket.emit('get-document', documentId);
-  }, [socket, quill, documentId]);*/
-  
-
   useEffect(() => {
     if (socket == null || quill == null) return;
 
@@ -246,12 +234,14 @@ export default function TextEditor() {
 
     recognition.onend = () => {
       setIsListening(false);
+      setIsRecognizing(false); // Reset recognizing to false
       setShowLanguageDropdown(false); // Hide dropdown after speech recognition ends
     };
 
     recognition.start();
     recognitionRef.current = recognition;
     setIsListening(true);
+    setIsRecognizing(true); // Set recognizing to true
   };
 
   const handleStopListening = () => {
@@ -259,7 +249,16 @@ export default function TextEditor() {
       recognitionRef.current.stop();
     }
     setIsListening(false);
+    setIsRecognizing(false); // Set recognizing to false
     setShowLanguageDropdown(false); // Hide dropdown when stopping listening
+  };
+
+  const toggleSpeechRecognition = () => {
+    if (isRecognizing) {
+      handleStopListening(); // If recognizing, stop
+    } else {
+      startSpeechRecognition(); // Otherwise, start
+    }
   };
 
   return (
@@ -276,19 +275,25 @@ export default function TextEditor() {
         <button onClick={handleStartListening} className="voice-button-speech-on" disabled={isListening}>
           <FontAwesomeIcon icon={faMicrophone} /> Speech Recognition
         </button>
+
         {showLanguageDropdown && (
-          <div className="language-selector">
-            <select value={selectedLanguage} onChange={handleLanguageChange}>
-              {languages.map(lang => (
-                <option key={lang.code} value={lang.code}>{lang.label}</option>
+          <div className="language-selection-container">
+            <select onChange={handleLanguageChange} value={selectedLanguage} className="language-select">
+              {languages.map(language => (
+                <option key={language.code} value={language.code}>
+                  {language.label}
+                </option>
               ))}
             </select>
-            <button onClick={startSpeechRecognition} className='voice-button-speech-start'><FontAwesomeIcon icon={faMicrophone} />Start Recognizing</button>
+
+            <button
+              className={`voice-button-speech-start ${isListening ? 'active' : ''}`}
+              onClick={toggleSpeechRecognition}
+            >
+              <div className={`switch ${isListening ? 'on' : 'off'}`}></div>
+            </button>
           </div>
         )}
-        <button onClick={handleStopListening} className="voice-button-speech-off" disabled={!isListening}>
-          <FontAwesomeIcon icon={faStop} /> Stop Speech Recognition
-        </button>
 
       </div>
       <audio ref={audioRef} autoPlay></audio>
