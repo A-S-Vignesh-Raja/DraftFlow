@@ -53,8 +53,8 @@ export default function TextEditor() {
   ];
 
   useEffect(() => {
-    //const s = io("https://draftflow.onrender.com");
-    const s=io("http://localhost:3001");
+    const s = io("https://draftflow.onrender.com");
+    //const s=io("http://localhost:3001");
     setSocket(s);
 
     return () => {
